@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		4088FCD71AC8610D00EDCD89 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4088FCD61AC8610D00EDCD89 /* AppDelegate.swift */; };
 		4088FCDA1AC8610D00EDCD89 /* PhotoTagger.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4088FCD81AC8610D00EDCD89 /* PhotoTagger.xcdatamodeld */; };
-		4088FCDC1AC8610D00EDCD89 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4088FCDB1AC8610D00EDCD89 /* ViewController.swift */; };
+		4088FCDC1AC8610D00EDCD89 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4088FCDB1AC8610D00EDCD89 /* MainViewController.swift */; };
 		4088FCDF1AC8610D00EDCD89 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4088FCDD1AC8610D00EDCD89 /* Main.storyboard */; };
 		4088FCE11AC8610D00EDCD89 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4088FCE01AC8610D00EDCD89 /* Images.xcassets */; };
 		4088FCE41AC8610D00EDCD89 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4088FCE21AC8610D00EDCD89 /* LaunchScreen.xib */; };
@@ -31,7 +31,7 @@
 		4088FCD51AC8610D00EDCD89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4088FCD61AC8610D00EDCD89 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4088FCD91AC8610D00EDCD89 /* PhotoTagger.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = PhotoTagger.xcdatamodel; sourceTree = "<group>"; };
-		4088FCDB1AC8610D00EDCD89 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		4088FCDB1AC8610D00EDCD89 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		4088FCDE1AC8610D00EDCD89 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		4088FCE01AC8610D00EDCD89 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		4088FCE31AC8610D00EDCD89 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
@@ -80,7 +80,7 @@
 			isa = PBXGroup;
 			children = (
 				4088FCD61AC8610D00EDCD89 /* AppDelegate.swift */,
-				4088FCDB1AC8610D00EDCD89 /* ViewController.swift */,
+				4088FCDB1AC8610D00EDCD89 /* MainViewController.swift */,
 				4088FCDD1AC8610D00EDCD89 /* Main.storyboard */,
 				4088FCE01AC8610D00EDCD89 /* Images.xcassets */,
 				4088FCE21AC8610D00EDCD89 /* LaunchScreen.xib */,
@@ -215,7 +215,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4088FCDC1AC8610D00EDCD89 /* ViewController.swift in Sources */,
+				4088FCDC1AC8610D00EDCD89 /* MainViewController.swift in Sources */,
 				4088FCDA1AC8610D00EDCD89 /* PhotoTagger.xcdatamodeld in Sources */,
 				4088FCD71AC8610D00EDCD89 /* AppDelegate.swift in Sources */,
 			);
@@ -346,9 +346,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = PhotoTagger/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -356,9 +359,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = PhotoTagger/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
