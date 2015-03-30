@@ -43,13 +43,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Saves changes in the application's managed object context before the application terminates.
         self.saveContext()
     }
-
+    
+    // ================================================================================
     // MARK: - Core Data stack
-
+    // ================================================================================
     lazy var applicationDocumentsDirectory: NSURL = {
         // The directory the application uses to store the Core Data store file. This code uses a directory named "com.otaviokz.PhotoTagger" in the application's documents Application Support directory.
         let urls = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)
-        return urls[urls.count-1] as! NSURL
+        return urls[urls.count-1] as NSURL
     }()
 
     lazy var managedObjectModel: NSManagedObjectModel = {
@@ -88,13 +89,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if coordinator == nil {
             return nil
         }
-        var managedObjectContext = NSManagedObjectContext()
+        var managedObjectContext = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
         managedObjectContext.persistentStoreCoordinator = coordinator
         return managedObjectContext
     }()
 
+    // ================================================================================
     // MARK: - Core Data Saving support
-
+    // ================================================================================
     func saveContext () {
         if let moc = self.managedObjectContext {
             var error: NSError? = nil
