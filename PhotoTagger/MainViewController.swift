@@ -34,29 +34,6 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
             println("Could not fetch \(error), \(error!.userInfo)")
         }
     }
-    /*
-    //1
-    let appDelegate =
-    UIApplication.sharedApplication().delegate as AppDelegate
-    
-    let managedContext = appDelegate.managedObjectContext!
-    
-    //2
-    let fetchRequest = NSFetchRequest(entityName:"Person")
-    
-    //3
-    var error: NSError?
-    
-    let fetchedResults =
-    managedContext.executeFetchRequest(fetchRequest,
-        error: &error) as [NSManagedObject]?
-    
-    if let results = fetchedResults {
-        people = results
-    } else {
-    println("Could not fetch \(error), \(error!.userInfo)")
-    }
-    */
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -72,8 +49,10 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         
         let saveAction = UIAlertAction(title: "Save", style: .Default) { (action: UIAlertAction!) -> Void in
             let textField = alert.textFields![0] as UITextField
-            self.saveName(textField.text)
-            self.tableViewMain.reloadData()
+            if textField.text != "" {
+                self.saveName(textField.text)
+                self.tableViewMain.reloadData()
+            }
         }
         alert.addAction(saveAction)
         
@@ -118,7 +97,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
             tags.append(newTag)
         }
     }
-    
+   
 
     // ================================================================================
     // MARK: - UITableViewDatasource
@@ -142,4 +121,3 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         return 0.0
     }
 }
-
