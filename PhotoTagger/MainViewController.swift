@@ -14,6 +14,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     @IBOutlet weak var tableViewMain: UITableView!
     /*** CoreData ***/
     var tags = [Tag]()
+    var selectedTag: Tag?
     
     // ================================================================================
     // MARK: - Lifecycle
@@ -40,6 +41,13 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         // Dispose of any resources that can be recreated.
     }
 
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "ShowTag" {
+            let tagViewController = segue.destinationViewController as TagViewController
+            tagViewController.tag = selectedTag
+        }
+    }
+    
     // ================================================================================
     // MARK: - IBAction
     // ================================================================================
@@ -100,7 +108,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
    
 
     // ================================================================================
-    // MARK: - UITableViewDatasource
+    // MARK: - UITableViewDatasource / Delegate
     // ================================================================================
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 1;
@@ -119,5 +127,10 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     
     func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 0.0
+    }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        selectedTag = tags[indexPath.row]
+        performSegueWithIdentifier("ShowTag", sender: self)
     }
 }
