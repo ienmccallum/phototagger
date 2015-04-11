@@ -18,6 +18,7 @@
 		4088FCE11AC8610D00EDCD89 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4088FCE01AC8610D00EDCD89 /* Images.xcassets */; };
 		4088FCE41AC8610D00EDCD89 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4088FCE21AC8610D00EDCD89 /* LaunchScreen.xib */; };
 		4088FCF01AC8610D00EDCD89 /* PhotoTaggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4088FCEF1AC8610D00EDCD89 /* PhotoTaggerTests.swift */; };
+		408C25371AD971E200DD7C6D /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 408C25361AD971E200DD7C6D /* Photos.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +47,7 @@
 		4088FCE91AC8610D00EDCD89 /* PhotoTaggerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhotoTaggerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4088FCEE1AC8610D00EDCD89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4088FCEF1AC8610D00EDCD89 /* PhotoTaggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoTaggerTests.swift; sourceTree = "<group>"; };
+		408C25361AD971E200DD7C6D /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				408C25371AD971E200DD7C6D /* Photos.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +109,7 @@
 		4088FCC81AC8610D00EDCD89 = {
 			isa = PBXGroup;
 			children = (
+				40DC66591AD70FF6001F3CDA /* Frameworks */,
 				4088FCD31AC8610D00EDCD89 /* PhotoTagger */,
 				4088FCEC1AC8610D00EDCD89 /* PhotoTaggerTests */,
 				4088FCD21AC8610D00EDCD89 /* Products */,
@@ -157,6 +161,14 @@
 				4088FCEE1AC8610D00EDCD89 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		40DC66591AD70FF6001F3CDA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				408C25361AD971E200DD7C6D /* Photos.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -343,7 +355,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -382,7 +394,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

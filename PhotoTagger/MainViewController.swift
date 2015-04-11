@@ -42,8 +42,8 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     }
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "ShowTag" {
-            let tagViewController = segue.destinationViewController as TagViewController
+        if segue.identifier == "showTag" {
+            let tagViewController = segue.destinationViewController as! TagViewController
             tagViewController.tag = selectedTag
         }
     }
@@ -56,7 +56,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         alert.addTextFieldWithConfigurationHandler { (textField: UITextField!) -> Void in }
         
         let saveAction = UIAlertAction(title: "Save", style: .Default) { (action: UIAlertAction!) -> Void in
-            let textField = alert.textFields![0] as UITextField
+            let textField = alert.textFields![0] as! UITextField
             if textField.text != "" {
                 self.saveName(textField.text)
                 self.tableViewMain.reloadData()
@@ -91,7 +91,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         else if fetchedResults?.count == 0 {
              //3 - Insert new
             let entity = NSEntityDescription.entityForName("Tag", inManagedObjectContext: managedContext)
-            let newTag: Tag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as Tag
+            let newTag: Tag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
             //let newTag = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedContext)
             
             // 4 - Set value for tag.name and save
@@ -111,26 +111,61 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     // MARK: - UITableViewDatasource / Delegate
     // ================================================================================
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1;
+        return 2;
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tags.count;
+        if section == 0 {
+            return 1
+        }
+        else {
+            return tags.count
+        }
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell = tableViewMain.dequeueReusableCellWithIdentifier("CellMainTable", forIndexPath: indexPath) as UITableViewCell
-        let tag = tags[indexPath.row]
-        cell.textLabel!.text = tag.name
+        var cell: UITableViewCell
+        if indexPath.section == 0 {
+            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellMainTable", forIndexPath: indexPath) as! UITableViewCell
+        }
+        else {
+            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellSecondaryTable", forIndexPath: indexPath) as! UITableViewCell
+        }
+
+        if indexPath.section == 0 {
+            cell.textLabel?.text = "All photos"
+            
+        }
+        else {
+            let tag = tags[indexPath.row]
+            cell.textLabel?.text = tag.name
+        }
         return cell;
     }
     
-    func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 0.0
-    }
+//    func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        return 44.0
+//    }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        selectedTag = tags[indexPath.row]
-        performSegueWithIdentifier("ShowTag", sender: self)
+        if indexPath.section == 0 {
+            selectedTag = nil
+        }
+        else {
+            selectedTag = tags[indexPath.row]
+        }
+    }
+    
+    func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        var header = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 44))
+        var label = UILabel(frame: CGRect(x: 10, y: 0, width: header.frame.width - 10, height: header.frame.height))
+        if section == 0 {
+            label.text = "Photo Library"
+        }
+        else {
+            label.text = "Tags"
+        }
+        header.addSubview(label)
+        return header
     }
 }

@@ -7,13 +7,22 @@
 //
 
 import UIKit
+import Photos
 
-class TagViewController: DefaultViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+enum PTCOLLECTIONMODE {
+    case TAG
+    case LIBRARY
+}
+
+class TagViewController: DefaultViewController, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
     
     @IBOutlet weak var collectionViewPhotos: UICollectionView!
     
     var tag: Tag?
-    var selectedImages = Array<UIImage>()
+    var mode: PTCOLLECTIONMODE = .TAG
+    let photoManager = PHImageManager.defaultManager()
+    let cachingImageManager = PHCachingImageManager()
+    var arrayPhotos = Array<PHAsset>()
     
     // ================================================================================
     // MARK: - Lifecycle
@@ -26,52 +35,64 @@ class TagViewController: DefaultViewController, UIImagePickerControllerDelegate,
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        navigationItem.title = tag?.name
+        if let theTag = tag {
+            mode = .TAG
+            navigationItem.title = tag?.name
+        }
+        else {
+            mode = .LIBRARY
+            navigationItem.title = "All photos"
+        }
+        
+        if arrayPhotos.count == 0 {
+            let options = PHFetchOptions()
+            options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+            if let results = PHAsset.fetchAssetsWithMediaType(.Image, options: options) {
+                results.enumerateObjectsUsingBlock({ (object, index, _) -> Void in
+                    if let asset = object as? PHAsset {
+                        self.arrayPhotos.append(asset)
+                    }
+                })
+                collectionViewPhotos.reloadData()
+            }
+            
+        }
     }
     
     // ================================================================================
     // MARK: - IBAction
     // ================================================================================
     func btnAddPhoto_TouchUpInside(sender: UIBarButtonItem) {
-        let picker = UIImagePickerController()
-        picker.delegate = self
-        presentViewController(picker, animated: true, nil)
-    }
-    
-    // ================================================================================
-    // MARK: - UIIMagePickerControllerDelegate
-    // ================================================================================
-    func imagePickerController(picker: UIImagePickerController!, didFinishPickingImage image: UIImage!, editingInfo: [NSObject : AnyObject]!) {
-        if find(selectedImages, image) == nil {
-            selectedImages.append(image)
-            collectionViewPhotos.reloadData()
-        }
         
-        dismissViewControllerAnimated(true, completion: nil)
-    }
-    
-    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        dismissViewControllerAnimated(true, completion: nil)
     }
     
     // ================================================================================
     // MARK: - UICollectionViewDataSource / Delegate
     // ================================================================================
-
-    
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
     }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return selectedImages.count
+        return arrayPhotos.count
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        var cell = collectionViewPhotos.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as UICollectionViewCell
+        var cell = collectionViewPhotos.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! UICollectionViewCell
         cell.layer.shouldRasterize = true
-        var imageView = cell.viewWithTag(1) as UIImageView
-        imageView.image = selectedImages[indexPath.row]
+        
+        if cell.tag != 0 {
+            photoManager.cancelImageRequest(PHImageRequestID(cell.tag))
+        }
+        
+        let asset = arrayPhotos[indexPath.row]
+        cell.tag = Int(photoManager.requestImageForAsset(asset, targetSize: CGSize(width: cell.frame.width, height: cell.frame.height), contentMode:  .AspectFit, options: nil, resultHandler: { (result: UIImage! ,  _) -> Void in
+            var imageView = cell.viewWithTag(99999) as? UIImageView
+            if let aCell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) {
+                imageView?.image = result
+            }
+        }))
+
         return cell
     }
 }
