@@ -283,6 +283,5 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAtIndex section: Int) -> CGFloat {
         return 2.0
     }
-
-
+    
 }
