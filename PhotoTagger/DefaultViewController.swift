@@ -14,4 +14,9 @@ class DefaultViewController: UIViewController {
         let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
         return delegate
     }()
+    
+    lazy var screenScale: CGFloat = {
+        let scale = UIScreen.mainScreen().scale
+        return scale
+    }()
 }

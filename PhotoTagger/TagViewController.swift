@@ -15,18 +15,28 @@ enum PTCOLLECTIONMODE {
     case LIBRARY
 }
 
-class TagViewController: DefaultViewController, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, TagSelectingViewControllerDelegate {
+enum PTSELECTIONMODE {
+    case VIEW
+    case SELECT
+}
+
+class TagViewController: DefaultViewController, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, TagSelectingViewControllerDelegate, PictureViewControllerDelegate {
     
     @IBOutlet weak var collectionViewPhotos: UICollectionView!
     
     var tag: Tag?
     var mode: PTCOLLECTIONMODE = .TAG
+    var selectMode: PTSELECTIONMODE = .VIEW
     let photoManager = PHImageManager.defaultManager()
     let cachingImageManager = PHCachingImageManager()
     var arrayPhotos = Array<PHAsset>()
     var selectedPhotos = Array<PHAsset>()
     var collectionViewCellSize: CGFloat = 78.0
     var pictures = [Picture]()
+    var lastSelected: Picture?
+    var lastSelectedIndexPath: NSIndexPath?
+    var addPhotoButton: UIBarButtonItem?
+    var initing = true
     
     // ================================================================================
     // MARK: - Lifecycle
@@ -50,25 +60,33 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        
-        if let theTag = tag {
-            mode = .TAG
-            navigationItem.title = tag?.name
+
+        if initing {
+            initing = false;
             
+            if let theTag = tag {
+                mode = .TAG
+                navigationItem.title = tag?.name
+            }
+            else {
+                addPhotoButton = UIBarButtonItem(title: "Tag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnAddPhoto_TouchUpInside:"))
+                navigationItem.rightBarButtonItem = addPhotoButton
+                mode = .LIBRARY
+                navigationItem.title = "All photos"
+            }
+            
+            generateDataStructures()
         }
-        else {
-            var addPhotoButton = UIBarButtonItem(title: "Tag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnAddPhoto_TouchUpInside:"))
-            navigationItem.rightBarButtonItem = addPhotoButton
-            mode = .LIBRARY
-            navigationItem.title = "All photos"
-        }
-        
-        generateDataStructures()
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showTagSelector" {
             let view: TagSelectingViewController = segue.destinationViewController as! TagSelectingViewController
+            view.delegate = self
+        }
+        else if segue.identifier == "showPicture" {
+            let view: PictureViewController = segue.destinationViewController as! PictureViewController
+            view.picture = lastSelected
             view.delegate = self
         }
     }
@@ -120,7 +138,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     func generateDataStructures() {
         arrayPhotos = Array<PHAsset>()
         let options = PHFetchOptions()
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         if let results = PHAsset.fetchAssetsWithMediaType(.Image, options: options) {
             results.enumerateObjectsUsingBlock({ (object, index, _) -> Void in
                 if let asset = object as? PHAsset {
@@ -138,7 +156,9 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 }
             })
             
-            cachingImageManager.startCachingImagesForAssets(arrayPhotos, targetSize: PHImageManagerMaximumSize, contentMode: .AspectFit, options: nil)
+            let options = PHImageRequestOptions()
+            options.deliveryMode = .HighQualityFormat
+            cachingImageManager.startCachingImagesForAssets(arrayPhotos, targetSize: PHImageManagerMaximumSize, contentMode: .AspectFit, options: options)
             collectionViewPhotos.reloadData()
         }
         
@@ -169,6 +189,14 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     }
     
     // ================================================================================
+    // MARK: - PictureViewControllerDelegate
+    // ================================================================================
+    func startedSelectingWithPicure(picture: Picture) {
+        selectMode = .SELECT
+        collectionView(collectionViewPhotos, didSelectItemAtIndexPath: lastSelectedIndexPath!)
+    }
+    
+    // ================================================================================
     // MARK: - UICollectionViewDataSource / Delegate
     // ================================================================================
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -188,9 +216,11 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         }
         
         let asset = arrayPhotos[indexPath.row]
-        cell.tag = Int(cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: cell.frame.width * 2, height: cell.frame.height * 2), contentMode:  .AspectFit, options: nil, resultHandler: { (result: UIImage! ,  _) -> Void in
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .HighQualityFormat
+        cell.tag = Int(cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: cell.frame.width * screenScale, height: cell.frame.height * screenScale), contentMode: .AspectFit, options: options, resultHandler: { (result: UIImage! ,  _) -> Void in
             if let aCell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) as? PhotoCell {
-                aCell.imageViewPicture?.image = result
+                aCell.imageViewPicture.image = result
             }
         }))
 
@@ -198,16 +228,40 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     }
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        lastSelectedIndexPath = indexPath
         let cell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) as? PhotoCell
         let selectedAsset = arrayPhotos[indexPath.item] as PHAsset
-        if !(selectedPhotos as NSArray).containsObject(selectedAsset) {
-            selectedPhotos.append(selectedAsset)
-            cell?.imageViewSelected?.hidden = false
+        
+        if selectMode == .VIEW {
+            var foundPic: Picture?
+            for pic: Picture in pictures {
+                if pic.identifier == selectedAsset.localIdentifier {
+                    foundPic = pic
+                    break
+                }
+            }
+            if let thePic = foundPic {
+                lastSelected = foundPic
+            }
+            else {
+                self.addPictureWithIdentifier(selectedAsset.localIdentifier, tags: Array<Tag>())
+                lastSelected = pictures.last
+            }
+            performSegueWithIdentifier("showPicture", sender: self)
         }
         else {
-            let index = (selectedPhotos as NSArray).indexOfObject(selectedAsset)
-            selectedPhotos.removeAtIndex(index)
-            cell?.imageViewSelected?.hidden = true
+            if !(selectedPhotos as NSArray).containsObject(selectedAsset) {
+                selectedPhotos.append(selectedAsset)
+                cell?.imageViewSelected?.hidden = false
+            }
+            else {
+                let index = (selectedPhotos as NSArray).indexOfObject(selectedAsset)
+                selectedPhotos.removeAtIndex(index)
+                cell?.imageViewSelected?.hidden = true
+                if selectedPhotos.count == 0 {
+                    selectMode = .VIEW
+                }
+            }
         }
     }
     
