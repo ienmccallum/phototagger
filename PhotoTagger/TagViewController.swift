@@ -32,6 +32,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     var arrayPhotos = Array<PHAsset>()
     var selectedPhotos = Array<PHAsset>()
     var collectionViewCellSize: CGFloat = 78.0
+    var imageSize: CGSize = CGSize(width: 78.0 * screenScale, height: 78.0 * screenScale)
     var pictures = [Picture]()
     var lastSelected: Picture?
     var lastSelectedIndexPath: NSIndexPath?
@@ -43,8 +44,6 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // ================================================================================
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        collectionViewCellSize = ((UIScreen.mainScreen().nativeBounds.width / UIScreen.mainScreen().scale) - 6) / 4
         
         let managedContext = appDelegate.managedObjectContext!
         let fetchRequest = NSFetchRequest(entityName: "Picture")
@@ -61,6 +60,9 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
 
+        collectionViewCellSize = ((UIScreen.mainScreen().nativeBounds.width / UIScreen.mainScreen().scale) - 6) / 4
+        imageSize = CGSize(width: collectionViewCellSize * screenScale, height: collectionViewCellSize * screenScale)
+        
         if initing {
             initing = false;
             
@@ -77,6 +79,10 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             
             generateDataStructures()
         }
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -139,6 +145,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         arrayPhotos = Array<PHAsset>()
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+
         if let results = PHAsset.fetchAssetsWithMediaType(.Image, options: options) {
             results.enumerateObjectsUsingBlock({ (object, index, _) -> Void in
                 if let asset = object as? PHAsset {
@@ -157,8 +164,8 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             })
             
             let options = PHImageRequestOptions()
-            options.deliveryMode = .HighQualityFormat
-            cachingImageManager.startCachingImagesForAssets(arrayPhotos, targetSize: PHImageManagerMaximumSize, contentMode: .AspectFit, options: options)
+            options.synchronous = false
+            cachingImageManager.startCachingImagesForAssets(arrayPhotos, targetSize: imageSize, contentMode: .AspectFill, options: options)
             collectionViewPhotos.reloadData()
         }
         
@@ -209,7 +216,6 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         var cell = collectionViewPhotos.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
-        cell.layer.shouldRasterize = true
         cell.imageViewSelected.hidden = !cell.selected
         if cell.tag != 0 {
             cachingImageManager.cancelImageRequest(PHImageRequestID(cell.tag))
@@ -217,11 +223,12 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         
         let asset = arrayPhotos[indexPath.row]
         let options = PHImageRequestOptions()
-        options.deliveryMode = .HighQualityFormat
-        cell.tag = Int(cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: cell.frame.width * screenScale, height: cell.frame.height * screenScale), contentMode: .AspectFit, options: options, resultHandler: { (result: UIImage! ,  _) -> Void in
-            if let aCell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) as? PhotoCell {
-                aCell.imageViewPicture.image = result
-            }
+
+        options.synchronous = false
+        cell.tag = Int(cachingImageManager.requestImageForAsset(asset, targetSize: imageSize, contentMode: .AspectFill, options: options, resultHandler: { (result: UIImage! ,  _) -> Void in
+                if let aCell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) as? PhotoCell {
+                    aCell.imageViewPicture.image = result
+                }
         }))
 
         return cell

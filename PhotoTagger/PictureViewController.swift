@@ -35,7 +35,7 @@ class PictureViewController: DefaultViewController {
             if let results = PHAsset.fetchAssetsWithMediaType(.Image, options: options) {
                 results.enumerateObjectsUsingBlock({ (object, index: Int, _) -> Void in
                     if let asset = object as? PHAsset {
-                        self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: self.imageViewPhoto.frame.width * self.screenScale, height: self.imageViewPhoto.frame.height * self.screenScale), contentMode: PHImageContentMode.AspectFit, options: nil, resultHandler: { (image, _) -> Void in
+                        self.cachingImageManager.requestImageForAsset(asset, targetSize: CGSize(width: self.imageViewPhoto.frame.width * screenScale, height: self.imageViewPhoto.frame.height * screenScale), contentMode: PHImageContentMode.AspectFit, options: nil, resultHandler: { (image, _) -> Void in
                                 self.imageViewPhoto.image = image
                         })
                     }

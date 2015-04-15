@@ -222,7 +222,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="78" height="78"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="cfA-bW-CGN">
+                                                <imageView autoresizesSubviews="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="cfA-bW-CGN">
                                                     <rect key="frame" x="0.0" y="0.0" width="78" height="78"/>
                                                 </imageView>
                                                 <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="check_icon.png" translatesAutoresizingMaskIntoConstraints="NO" id="ZCx-Jp-yuh">
@@ -233,10 +233,18 @@
                                         </view>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <constraints>
-                                            <constraint firstAttribute="bottomMargin" secondItem="cfA-bW-CGN" secondAttribute="bottom" constant="-8" id="Ju6-5L-iJL"/>
-                                            <constraint firstAttribute="trailingMargin" secondItem="cfA-bW-CGN" secondAttribute="trailing" constant="-8" id="Y2N-nK-MQ1"/>
-                                            <constraint firstItem="cfA-bW-CGN" firstAttribute="leading" secondItem="G5z-7y-Ho1" secondAttribute="leadingMargin" constant="-8" id="YaW-La-TBp"/>
-                                            <constraint firstItem="cfA-bW-CGN" firstAttribute="top" secondItem="G5z-7y-Ho1" secondAttribute="topMargin" constant="-8" id="cIv-Lo-F03"/>
+                                            <constraint firstAttribute="bottomMargin" secondItem="cfA-bW-CGN" secondAttribute="bottom" constant="-8" id="Ju6-5L-iJL">
+                                                <variation key="heightClass=compact" constant="-8"/>
+                                            </constraint>
+                                            <constraint firstAttribute="trailingMargin" secondItem="cfA-bW-CGN" secondAttribute="trailing" constant="-8" id="Y2N-nK-MQ1">
+                                                <variation key="heightClass=compact" constant="-8"/>
+                                            </constraint>
+                                            <constraint firstItem="cfA-bW-CGN" firstAttribute="leading" secondItem="G5z-7y-Ho1" secondAttribute="leadingMargin" constant="-8" id="YaW-La-TBp">
+                                                <variation key="heightClass=compact" constant="-8"/>
+                                            </constraint>
+                                            <constraint firstItem="cfA-bW-CGN" firstAttribute="top" secondItem="G5z-7y-Ho1" secondAttribute="topMargin" constant="-8" id="cIv-Lo-F03">
+                                                <variation key="heightClass=compact" constant="-8"/>
+                                            </constraint>
                                             <constraint firstItem="ZCx-Jp-yuh" firstAttribute="bottom" secondItem="G5z-7y-Ho1" secondAttribute="bottomMargin" id="p5n-KI-rkY"/>
                                             <constraint firstItem="ZCx-Jp-yuh" firstAttribute="trailing" secondItem="G5z-7y-Ho1" secondAttribute="trailingMargin" id="xb4-Xz-mbf"/>
                                         </constraints>
