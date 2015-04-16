@@ -15,10 +15,10 @@ protocol TagSelectingViewControllerDelegate {
 }
 
 class TagSelectingViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate {
-    var selectedTags = [Tag]()
+    var selectedTags: Array<Tag>! = Array<Tag>()
     var delegate: TagSelectingViewControllerDelegate?
-    var tags = [Tag]()
-    var pictures = [Picture]()
+    var tags: Array<Tag>! = Array<Tag>()
+    var pictures: Array<Picture>! = Array<Picture>()
     
     @IBOutlet weak var tableViewTags: UITableView!
     @IBOutlet weak var btnSave: UIBarButtonItem!
@@ -85,19 +85,20 @@ class TagSelectingViewController: DefaultViewController, UITableViewDataSource, 
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         var cell = tableView.cellForRowAtIndexPath(indexPath)
-        cell?.accessoryType = UITableViewCellAccessoryType.Checkmark
-        selectedTags.append(tags[indexPath.row])
-        btnSave?.enabled = true
+        cell!.accessoryType = UITableViewCellAccessoryType.Checkmark
+        let theTag = (self.tags as NSArray).objectAtIndex(indexPath.row) as! Tag
+        self.selectedTags.append(theTag)
+        self.btnSave?.enabled = true
     }
     
     func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
         var cell = tableView.cellForRowAtIndexPath(indexPath)
         cell?.accessoryType = UITableViewCellAccessoryType.None
-        let theTag = (tags as NSArray).objectAtIndex(indexPath.row) as! Tag
-        let index = (selectedTags as NSArray).indexOfObject(theTag)
-        selectedTags.removeAtIndex(index)
-        if(selectedTags.count == 0) {
-            btnSave?.enabled = false
+        let theTag = (self.tags as NSArray).objectAtIndex(indexPath.row) as! Tag
+        let index = (self.selectedTags as NSArray).indexOfObject(theTag)
+        self.selectedTags.removeAtIndex(index)
+        if(self.selectedTags.count == 0) {
+            self.btnSave?.enabled = false
         }
     }
 }

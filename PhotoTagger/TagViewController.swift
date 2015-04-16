@@ -64,7 +64,6 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-
         collectionViewCellSize = ((UIScreen.mainScreen().nativeBounds.width / UIScreen.mainScreen().scale) - 6) / 4
         imageSize = CGSize(width: collectionViewCellSize * screenScale, height: collectionViewCellSize * screenScale)
         
@@ -74,21 +73,22 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             if let theTag = tag {
                 mode = .TAG
                 navigationItem.title = tag?.name
+                btnTag = UIBarButtonItem(title: "Untag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnUntagPhoto_TouchUpInside:"))
+                navigationItem.rightBarButtonItem = btnTag
             }
             else {
-                btnTag = UIBarButtonItem(title: "Tag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnAddPhoto_TouchUpInside:"))
+                btnTag = UIBarButtonItem(title: "Tag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnTagPhoto_TouchUpInside:"))
                 navigationItem.rightBarButtonItem = btnTag
                 mode = .LIBRARY
                 navigationItem.title = "All photos"
-                btnTag?.enabled = false
+                navigationController?.navigationBar.topItem?.title = "Main"
+                
             }
+            
+            btnTag?.enabled = false
             
             generateDataStructures()
         }
-    }
-    
-    override func viewDidAppear(animated: Bool) {
-        super.viewDidAppear(animated)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -144,6 +144,43 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         
     }
     
+    func addTagWithName(name: String, pics: Array<Picture>) {
+        // 1 - get managed context
+        let managedContext = appDelegate.managedObjectContext!
+        
+        // 2 - Check if we already have it
+        let fetchRequest = NSFetchRequest(entityName: "Tag")
+        fetchRequest.predicate = NSPredicate(format: "name = '\(name)'")
+        
+        var error: NSError? = nil
+        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Tag]
+        if let theError = error  {
+            println("Could not fetch \(error), \(error)")
+        }
+        else {
+            var newTag: Tag
+            if fetchedResults!.count == 0 {
+                newTag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
+                newTag.name = name
+            }
+            else {
+                newTag = (fetchedResults! as NSArray).objectAtIndex(0) as! Tag
+            }
+            
+            newTag.pics = NSSet(array: pics)
+            tag = newTag
+            var error: NSError?
+            if !managedContext.save(&error) {
+                println("Could not save tag: \(error), \(error?.userInfo)")
+            }
+            else {
+                generateDataStructures()
+                
+                collectionViewPhotos.reloadData()
+            }
+        }
+    }
+    
     // ================================================================================
     // MARK: - Generate Data Structures
     // ================================================================================
@@ -155,12 +192,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             for pic: Picture in (tag?.pics.allObjects as! [Picture]) {
                 picIdentifiers.append(pic.identifier)
             }
-        }
-        if (picIdentifiers.count > 0) {
-            if let filteredResults = PHAsset.fetchAssetsWithLocalIdentifiers(picIdentifiers, options: nil) {
-                for var i = 0; i < filteredResults.count; i++ {
-                    if let asset = filteredResults.objectAtIndex(i) as? PHAsset {
-                        self.arrayPhotos.append(asset)
+            
+            if (picIdentifiers.count > 0) {
+                if let filteredResults = PHAsset.fetchAssetsWithLocalIdentifiers(picIdentifiers, options: nil) {
+                    for var i = 0; i < filteredResults.count; i++ {
+                        if let asset = filteredResults.objectAtIndex(i) as? PHAsset {
+                            self.arrayPhotos.append(asset)
+                        }
                     }
                 }
             }
@@ -181,13 +219,28 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // ================================================================================
     // MARK: - IBAction
     // ================================================================================
-    func btnAddPhoto_TouchUpInside(sender: UIBarButtonItem) {
+    func btnTagPhoto_TouchUpInside(sender: UIBarButtonItem) {
         performSegueWithIdentifier("showTagSelector", sender: self)
+    }
+    
+    func btnUntagPhoto_TouchUpInside(sender: UIBarButtonItem) {
+        var noGo = Array<String>()
+        for asset: PHAsset in selectedPhotos {
+            noGo.append(asset.localIdentifier)
+        }
+        
+        var picsArray = Array<Picture>()
+        for pic: Picture in tag?.pics.allObjects as! [Picture] {
+            if !(noGo as NSArray).containsObject(pic.identifier) {
+                picsArray.append(pic)
+            }
+        }
+        
+        addTagWithName(tag!.name, pics: picsArray)
     }
     
     @IBAction func btnHideShowTagged_TouchUpInside(sender: UIBarButtonItem) {
         if !isFiltering {
-            btnHideShowTagged.title = "Show All"
             isFiltering = true
             performSegueWithIdentifier("showTagSelector", sender: self)
         }
@@ -222,7 +275,9 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // MARK: - TagSelectingViewControllerDelegate
     // ================================================================================
     func didCancel() {
-        
+        isFiltering = false
+        selectedPhotos = Array<PHAsset>()
+        lastSelectedIndexPath = nil
     }
     
     func didSaveWithTags(tags: Array<Tag>!) {
@@ -239,8 +294,15 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                     arrayFilteredPhotos.append(asset)
                 }
             }
-            self.collectionViewPhotos.reloadData()
-            btnCount.title = "\(arrayFilteredPhotos.count)"
+            
+            if arrayFilteredPhotos.count >= 0 && arrayFilteredPhotos.count < arrayPhotos.count{
+                btnCount.title = "\(arrayFilteredPhotos.count)"
+                btnHideShowTagged.title = "Show All"
+                self.collectionViewPhotos.reloadData()
+            }
+            else {
+                isFiltering = false
+            }
         }
         else {
             for pic: PHAsset in selectedPhotos {
