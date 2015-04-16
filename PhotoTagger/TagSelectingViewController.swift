@@ -23,6 +23,7 @@ class TagSelectingViewController: DefaultViewController, UITableViewDataSource, 
     @IBOutlet weak var tableViewTags: UITableView!
     @IBOutlet weak var btnSave: UIBarButtonItem!
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         

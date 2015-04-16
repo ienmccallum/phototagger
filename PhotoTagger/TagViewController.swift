@@ -23,6 +23,9 @@ enum PTSELECTIONMODE {
 class TagViewController: DefaultViewController, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, TagSelectingViewControllerDelegate, PictureViewControllerDelegate {
     
     @IBOutlet weak var collectionViewPhotos: UICollectionView!
+    @IBOutlet weak var btnSelectDeselectAll: UIBarButtonItem!
+    @IBOutlet weak var btnHideShowTagged: UIBarButtonItem!
+    @IBOutlet weak var btnCount: UIBarButtonItem!
     
     var tag: Tag?
     var mode: PTCOLLECTIONMODE = .TAG
@@ -30,14 +33,16 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     let photoManager = PHImageManager.defaultManager()
     let cachingImageManager = PHCachingImageManager()
     var arrayPhotos = Array<PHAsset>()
+    var arrayFilteredPhotos = Array<PHAsset>()
     var selectedPhotos = Array<PHAsset>()
     var collectionViewCellSize: CGFloat = 78.0
     var imageSize: CGSize = CGSize(width: 78.0 * screenScale, height: 78.0 * screenScale)
     var pictures = [Picture]()
     var lastSelected: Picture?
     var lastSelectedIndexPath: NSIndexPath?
-    var addPhotoButton: UIBarButtonItem?
+    var btnTag: UIBarButtonItem?
     var initing = true
+    var isFiltering = false
     
     // ================================================================================
     // MARK: - Lifecycle
@@ -71,10 +76,11 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 navigationItem.title = tag?.name
             }
             else {
-                addPhotoButton = UIBarButtonItem(title: "Tag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnAddPhoto_TouchUpInside:"))
-                navigationItem.rightBarButtonItem = addPhotoButton
+                btnTag = UIBarButtonItem(title: "Tag", style: UIBarButtonItemStyle.Plain, target: self, action: Selector("btnAddPhoto_TouchUpInside:"))
+                navigationItem.rightBarButtonItem = btnTag
                 mode = .LIBRARY
                 navigationItem.title = "All photos"
+                btnTag?.enabled = false
             }
             
             generateDataStructures()
@@ -144,31 +150,32 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     func generateDataStructures() {
         arrayPhotos = Array<PHAsset>()
         let options = PHFetchOptions()
-        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-
-        if let results = PHAsset.fetchAssetsWithMediaType(.Image, options: options) {
-            results.enumerateObjectsUsingBlock({ (object, index, _) -> Void in
-                if let asset = object as? PHAsset {
-                    if let theTag = self.tag {
-                        let pics = theTag.pics.allObjects as! [Picture]
-                        for pic: Picture in pics {
-                            if pic.identifier == asset.localIdentifier {
-                                self.arrayPhotos.append(asset)
-                            }
-                        }
-                    }
-                    else {
+        var picIdentifiers = Array<String>()
+        if let theTag = tag {
+            for pic: Picture in (tag?.pics.allObjects as! [Picture]) {
+                picIdentifiers.append(pic.identifier)
+            }
+        }
+        if (picIdentifiers.count > 0) {
+            if let filteredResults = PHAsset.fetchAssetsWithLocalIdentifiers(picIdentifiers, options: nil) {
+                for var i = 0; i < filteredResults.count; i++ {
+                    if let asset = filteredResults.objectAtIndex(i) as? PHAsset {
                         self.arrayPhotos.append(asset)
                     }
                 }
-            })
-            
-            let options = PHImageRequestOptions()
-            options.synchronous = false
-            cachingImageManager.startCachingImagesForAssets(arrayPhotos, targetSize: imageSize, contentMode: .AspectFill, options: options)
-            collectionViewPhotos.reloadData()
+            }
+        }
+        else {
+            if let results = PHAsset.fetchAssetsWithMediaType(.Image, options: options) {
+                results.enumerateObjectsUsingBlock({ (object, index, _) -> Void in
+                    if let asset = object as? PHAsset {
+                        self.arrayPhotos.append(asset)
+                    }
+                })
+            }
         }
         
+        btnCount.title = "\(arrayPhotos.count)"
     }
     
     // ================================================================================
@@ -178,6 +185,39 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         performSegueWithIdentifier("showTagSelector", sender: self)
     }
     
+    @IBAction func btnHideShowTagged_TouchUpInside(sender: UIBarButtonItem) {
+        if !isFiltering {
+            btnHideShowTagged.title = "Show All"
+            isFiltering = true
+            performSegueWithIdentifier("showTagSelector", sender: self)
+        }
+        else {
+            btnHideShowTagged.title = "Hide Tagged"
+            isFiltering = false
+            btnCount.title = "\(arrayPhotos.count)"
+            self.collectionViewPhotos.reloadData()
+        }
+        
+    }
+
+    @IBAction func btnSelectDeselectAll_TouchUpInside(sender: UIBarButtonItem) {
+        selectedPhotos = Array<PHAsset>()
+        if btnSelectDeselectAll.tag == 0 {
+           btnSelectDeselectAll.tag = 1
+            btnSelectDeselectAll.title? = "Deselect All"
+            for asset: PHAsset in arrayPhotos {
+                selectedPhotos.append(asset)
+            }
+            btnTag?.enabled = true
+        }
+        else {
+            btnSelectDeselectAll.tag = 0
+            btnSelectDeselectAll.title? = "Select All"
+            btnTag?.enabled = false
+        }
+        collectionViewPhotos.reloadData()
+        
+    }
     // ================================================================================
     // MARK: - TagSelectingViewControllerDelegate
     // ================================================================================
@@ -186,13 +226,32 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     }
     
     func didSaveWithTags(tags: Array<Tag>!) {
-        for pic: PHAsset in selectedPhotos {
-            addPictureWithIdentifier(pic.localIdentifier, tags: tags)
+        if isFiltering {
+            arrayFilteredPhotos = Array<PHAsset>()
+            var notToShow = Array<String>()
+            for tag: Tag in tags {
+                for pic: Picture in (tag.pics.allObjects as! [Picture]) {
+                    notToShow.append(pic.identifier)
+                }
+            }
+            for asset: PHAsset in arrayPhotos {
+                if !(notToShow as NSArray).containsObject(asset.localIdentifier) {
+                    arrayFilteredPhotos.append(asset)
+                }
+            }
+            self.collectionViewPhotos.reloadData()
+            btnCount.title = "\(arrayFilteredPhotos.count)"
+        }
+        else {
+            for pic: PHAsset in selectedPhotos {
+                addPictureWithIdentifier(pic.localIdentifier, tags: tags)
+            }
+            
+            selectedPhotos = Array<PHAsset>()
+            lastSelectedIndexPath = nil
         }
         
-        for tag: Tag in tags {
-            
-        }
+        collectionViewPhotos.reloadData()
     }
     
     // ================================================================================
@@ -200,6 +259,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // ================================================================================
     func startedSelectingWithPicure(picture: Picture) {
         selectMode = .SELECT
+        btnTag?.enabled = true
         collectionView(collectionViewPhotos, didSelectItemAtIndexPath: lastSelectedIndexPath!)
     }
     
@@ -211,25 +271,35 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if isFiltering {
+            return arrayFilteredPhotos.count
+        }
         return arrayPhotos.count
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         var cell = collectionViewPhotos.dequeueReusableCellWithReuseIdentifier("PhotoCell", forIndexPath: indexPath) as! PhotoCell
-        cell.imageViewSelected.hidden = !cell.selected
-        if cell.tag != 0 {
-            cachingImageManager.cancelImageRequest(PHImageRequestID(cell.tag))
+        cell.imageViewSelected.hidden = true
+        var currentCellTag = cell.tag + 1
+        cell.tag = currentCellTag
+        var asset: PHAsset! = nil
+        if isFiltering {
+            asset = arrayFilteredPhotos[indexPath.item]
+        }
+        else {
+            asset = arrayPhotos[indexPath.item]
         }
         
-        let asset = arrayPhotos[indexPath.row]
+        if (selectedPhotos as NSArray).containsObject(asset) {
+            cell.imageViewSelected.hidden = false
+        }
         let options = PHImageRequestOptions()
-
         options.synchronous = false
-        cell.tag = Int(cachingImageManager.requestImageForAsset(asset, targetSize: imageSize, contentMode: .AspectFill, options: options, resultHandler: { (result: UIImage! ,  _) -> Void in
-                if let aCell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) as? PhotoCell {
-                    aCell.imageViewPicture.image = result
-                }
-        }))
+        cachingImageManager.requestImageForAsset(asset, targetSize: imageSize, contentMode: .AspectFill, options: options, resultHandler: { (result: UIImage! ,  _) -> Void in
+            if cell.tag == currentCellTag {
+                cell.imageViewPicture.image = result
+            }
+        })
 
         return cell
     }
@@ -237,7 +307,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         lastSelectedIndexPath = indexPath
         let cell = self.collectionViewPhotos.cellForItemAtIndexPath(indexPath) as? PhotoCell
-        let selectedAsset = arrayPhotos[indexPath.item] as PHAsset
+        var selectedAsset: PHAsset! = nil
+        if isFiltering {
+            selectedAsset = arrayFilteredPhotos[indexPath.item] as PHAsset
+        }
+        else {
+            selectedAsset = arrayPhotos[indexPath.item] as PHAsset
+        }
         
         if selectMode == .VIEW {
             var foundPic: Picture?
@@ -269,6 +345,27 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                     selectMode = .VIEW
                 }
             }
+            if selectedPhotos.count > 0 {
+                btnTag?.enabled = true
+                if isFiltering {
+                    btnCount.title = "\(selectedPhotos.count) - (\(arrayFilteredPhotos.count))"
+                }
+                else {
+                    btnCount.title = "\(selectedPhotos.count) - (\(arrayPhotos.count))"
+                }
+                
+            }
+            else {
+                btnTag?.enabled = false
+                if isFiltering {
+                    btnCount.title = "\(arrayFilteredPhotos.count)"
+                }
+                else {
+                    btnCount.title = "\(arrayPhotos.count)"
+                }
+                
+            }
+            
         }
     }
     
