@@ -58,11 +58,11 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showTag" {
-            let tagViewController = segue.destinationViewController as TagViewController
+            let tagViewController = segue.destinationViewController as! TagViewController
             tagViewController.tag = selectedTag
         }
         else {
-            let tagViewController = segue.destinationViewController as TagViewController
+            let tagViewController = segue.destinationViewController as! TagViewController
             tagViewController.tag = nil
         }
     }
@@ -75,7 +75,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         alert.addTextFieldWithConfigurationHandler { (textField: UITextField!) -> Void in }
         
         let saveAction = UIAlertAction(title: "Save", style: .Default) { (action: UIAlertAction!) -> Void in
-            let textField = alert.textFields![0] as UITextField
+            let textField = alert.textFields![0] as! UITextField
             if textField.text != "" {
                 self.addTagWithName(textField.text)
                 self.tableViewMain.reloadData()
@@ -110,7 +110,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         else if fetchedResults?.count == 0 {
              //3 - Insert new
             let entity = NSEntityDescription.entityForName("Tag", inManagedObjectContext: managedContext)
-            let newTag: Tag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as Tag
+            let newTag: Tag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
             //let newTag = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedContext)
             
             // 4 - Set value for tag.name and save
@@ -140,7 +140,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         }
         else if fetchedResults?.count == 0 {
             //3 - Insert new
-            let newPicture: Picture = NSEntityDescription.insertNewObjectForEntityForName("Picture", inManagedObjectContext: managedContext) as Picture
+            let newPicture: Picture = NSEntityDescription.insertNewObjectForEntityForName("Picture", inManagedObjectContext: managedContext) as! Picture
             
             // 4 - Set value for tag.name and save
             newPicture.identifier = identifier
@@ -173,10 +173,10 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell: UITableViewCell
         if indexPath.section == 0 {
-            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellMainTable", forIndexPath: indexPath) as UITableViewCell
+            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellMainTable", forIndexPath: indexPath)as! UITableViewCell
         }
         else {
-            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellSecondaryTable", forIndexPath: indexPath) as UITableViewCell
+            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellSecondaryTable", forIndexPath: indexPath) as! UITableViewCell
         }
 
         if indexPath.section == 0 {

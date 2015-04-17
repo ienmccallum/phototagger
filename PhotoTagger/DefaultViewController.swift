@@ -9,9 +9,11 @@
 import UIKit
 import Foundation
 
+let screenScale = UIScreen.mainScreen().scale
+
 class DefaultViewController: UIViewController {
     lazy var appDelegate: AppDelegate = {
-        let delegate = UIApplication.sharedApplication().delegate as AppDelegate
+        let delegate = UIApplication.sharedApplication().delegate as! AppDelegate
         return delegate
     }()
 }
