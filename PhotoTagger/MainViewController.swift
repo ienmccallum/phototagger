@@ -12,8 +12,11 @@ import CoreData
 class MainViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     /*** IBOutlets ***/
     @IBOutlet weak var tableViewMain: UITableView!
+    var barButtonAdd: UIBarButtonItem! = nil
+    var barButtonDelete: UIBarButtonItem! = nil
     /*** CoreData ***/
     var selectedTag: Tag?
+    var arraySelectedTags = Array<NSIndexPath>()
     var tagsFetchController: NSFetchedResultsController! = nil
     
     // ================================================================================
@@ -34,6 +37,10 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         else {
             tableViewMain.reloadData()
         }
+        
+        barButtonDelete = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Trash, target: self, action: Selector("deletePressed"))
+        barButtonAdd = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Add, target: self, action: Selector("addPressed"))
+        self.navigationItem.rightBarButtonItem = self.barButtonAdd
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -52,10 +59,24 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         }
     }
     
+    @IBAction func btnEdit_TouchUpInside(sender: UIBarButtonItem) {
+        UIView.animateWithDuration(0.2, animations: { () -> Void in
+            self.tableViewMain.editing = !self.tableViewMain.editing
+        }) { (Bool) -> Void in
+            self.arraySelectedTags = Array<NSIndexPath>()
+            if self.tableViewMain.editing {
+                self.navigationItem.rightBarButtonItem = self.barButtonDelete
+                self.barButtonDelete.enabled = false
+            }
+            else {
+                self.navigationItem.rightBarButtonItem = self.barButtonAdd
+            }
+        }
+    }
     // ================================================================================
-    // MARK: - IBAction
+    // MARK: - Private
     // ================================================================================
-    @IBAction func buttonAddTag_TouchUpInside(sender: UIBarButtonItem) {
+    func addPressed() {
         var alert = UIAlertController(title: "New Tag", message: "Add new tag", preferredStyle: .Alert)
         alert.addTextFieldWithConfigurationHandler { (textField: UITextField!) -> Void in }
         
@@ -76,10 +97,10 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         presentViewController(alert, animated: true, completion: nil)
     }
     
-    // ================================================================================
-    // MARK: - Private
-    // ================================================================================
-    
+    func deletePressed() {
+        
+    }
+
     
     // ================================================================================
     // MARK: - NSFetchedResultsControllerDelegate
@@ -132,13 +153,30 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if indexPath.section == 0 {
-            selectedTag = nil
+        if !tableViewMain.editing {
+            if indexPath.section == 0 {
+                selectedTag = nil
+            }
+            else {
+                selectedTag = tagsFetchController.fetchedObjects![indexPath.row] as? Tag
+            }
+            performSegueWithIdentifier("showTag", sender: self)
         }
         else {
-            selectedTag = tagsFetchController.fetchedObjects![indexPath.row] as? Tag
+            if !(arraySelectedTags as NSArray).containsObject(indexPath) {
+                arraySelectedTags.append(indexPath)
+                barButtonDelete.enabled = true
+            }
+            
         }
-        performSegueWithIdentifier("showTag", sender: self)
+    }
+    
+    func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
+        let index = (arraySelectedTags as NSArray).indexOfObject(indexPath)
+        arraySelectedTags.removeAtIndex(index)
+        if arraySelectedTags.count == 0 {
+            barButtonDelete.enabled = false
+        }
     }
     
     func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

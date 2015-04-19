@@ -20,7 +20,7 @@ enum PTSELECTIONMODE {
     case SELECT
 }
 
-class TagViewController: DefaultViewController, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, TagSelectingViewControllerDelegate, PictureViewControllerDelegate {
+class TagViewController: DefaultViewController, UINavigationControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, TagSelectingViewControllerDelegate, PictureViewControllerDelegate, NSFetchedResultsControllerDelegate {
     
     @IBOutlet weak var collectionViewPhotos: UICollectionView!
     @IBOutlet weak var btnSelectDeselectAll: UIBarButtonItem!
@@ -37,12 +37,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     var selectedPhotos = Array<PHAsset>()
     var collectionViewCellSize: CGFloat = 78.0
     var imageSize: CGSize = CGSize(width: 78.0 * screenScale, height: 78.0 * screenScale)
-    var pictures = [Picture]()
     var lastSelected: Picture?
     var lastSelectedIndexPath: NSIndexPath?
     var btnTag: UIBarButtonItem?
     var initing = true
     var isFiltering = false
+    var picsFetchController: NSFetchedResultsController! = nil
+    
     
     // ================================================================================
     // MARK: - Lifecycle
@@ -51,13 +52,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         super.viewDidLoad()
         
         let managedContext = appDelegate.managedObjectContext!
-        let fetchRequest = NSFetchRequest(entityName: "Picture")
+        let picsFetchRequest = NSFetchRequest(entityName: "Picture")
+        picsFetchRequest.sortDescriptors = [NSSortDescriptor(key: "identifier", ascending: true)]
+        picsFetchController = NSFetchedResultsController(fetchRequest: picsFetchRequest, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "Master")
+        picsFetchController.delegate = self
         var error: NSError?
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Picture]
-        if fetchedResults != nil {
-            pictures = fetchedResults!
-        }
-        else {
+        picsFetchController.performFetch(&error)
+        if let theError = error {
             println("Could not fetch \(error), \(error!.userInfo)")
         }
     }
@@ -110,79 +111,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // ================================================================================
     // MARK: - Private
     // ================================================================================
-    func addPictureWithIdentifier(identifier: String, tags: [Tag]) {
-        // 1 - get managed context
-        let managedContext = appDelegate.managedObjectContext!
-        
-        // 2 - Check if we already have it
-        let fetchRequest = NSFetchRequest(entityName: "Picture")
-        fetchRequest.predicate = NSPredicate(format: "identifier = '\(identifier)'")
-        
-        var error: NSError? = nil
-        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as! [Picture]
-        if let theError = error  {
-            println("Could not fetch \(error), \(error)")
-        }
-        else {
-            var newPicture: Picture
-            if fetchedResults.count == 0 {
-                newPicture = NSEntityDescription.insertNewObjectForEntityForName("Picture", inManagedObjectContext: managedContext) as! Picture
-            }
-            else {
-                newPicture = (fetchedResults as NSArray).objectAtIndex(0) as! Picture
-            }
-            
-            //let newTag = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedContext)
-            
-            // 4 - Set value for tag.name and save
-            newPicture.identifier = identifier
-            newPicture.tags = NSSet(array: tags)
-            
-            var error: NSError?
-            if !managedContext.save(&error) {
-                println("Could not save tag: \(error), \(error?.userInfo)")
-            }
-            
-            pictures.append(newPicture)
-        }
-        
-    }
+
     
-    func addTagWithName(name: String, pics: Array<Picture>) {
-        // 1 - get managed context
-        let managedContext = appDelegate.managedObjectContext!
-        
-        // 2 - Check if we already have it
-        let fetchRequest = NSFetchRequest(entityName: "Tag")
-        fetchRequest.predicate = NSPredicate(format: "name = '\(name)'")
-        
-        var error: NSError? = nil
-        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Tag]
-        if let theError = error  {
-            println("Could not fetch \(error), \(error)")
-        }
-        else {
-            var newTag: Tag
-            if fetchedResults!.count == 0 {
-                newTag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
-                newTag.name = name
-            }
-            else {
-                newTag = (fetchedResults! as NSArray).objectAtIndex(0) as! Tag
-            }
-            
-            newTag.pics = NSSet(array: pics)
-            tag = newTag
-            var error: NSError?
-            if !managedContext.save(&error) {
-                println("Could not save tag: \(error), \(error?.userInfo)")
-            }
-            else {
-                generateDataStructures()
-                
-                collectionViewPhotos.reloadData()
-            }
-        }
+    // ================================================================================
+    // MARK: - NSFetchedResultsControllerDelegate
+    // ================================================================================
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        collectionViewPhotos.reloadData()
     }
     
     // ================================================================================
@@ -314,6 +249,9 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 addPictureWithIdentifier(pic.localIdentifier, tags: tags)
             }
             
+            generateDataStructures()
+            collectionViewPhotos.reloadData()
+            
             selectedPhotos = Array<PHAsset>()
             lastSelectedIndexPath = nil
         }
@@ -384,7 +322,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         
         if selectMode == .VIEW {
             var foundPic: Picture?
-            for pic: Picture in pictures {
+            for pic: Picture in picsFetchController.fetchedObjects! as! [Picture] {
                 if pic.identifier == selectedAsset.localIdentifier {
                     foundPic = pic
                     break
@@ -395,7 +333,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             }
             else {
                 self.addPictureWithIdentifier(selectedAsset.localIdentifier, tags: Array<Tag>())
-                lastSelected = pictures.last
+                lastSelected = (picsFetchController.fetchedObjects! as! [Picture]).last
             }
             performSegueWithIdentifier("showPicture", sender: self)
         }
