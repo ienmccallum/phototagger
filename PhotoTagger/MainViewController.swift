@@ -99,9 +99,20 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     }
     
     func deletePressed() {
-        
+        deleteSelectedTags()
     }
-
+    
+    func deleteSelectedTags() {
+        var tagsToDelete = Array<Tag>()
+        for index: NSIndexPath in arraySelectedTags {
+            appDelegate.managedObjectContext?.deleteObject(tagsFetchController.fetchedObjects![index.row] as! Tag)
+        }
+        
+        var error: NSError?
+        if appDelegate.managedObjectContext!.save(&error) {
+            println("Could not save tag: \(error), \(error?.userInfo)")
+        }
+    }
     
     // ================================================================================
     // MARK: - NSFetchedResultsControllerDelegate
@@ -139,7 +150,6 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         
         if indexPath.section == 0 {
             lblTitle.text = "All photos"
-            
         }
         else {
             let tag = tagsFetchController.fetchedObjects![indexPath.row] as! Tag
@@ -164,20 +174,22 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
             performSegueWithIdentifier("showTag", sender: self)
         }
         else {
-            if !(arraySelectedTags as NSArray).containsObject(indexPath) {
+            if indexPath.section != 0 && !(arraySelectedTags as NSArray).containsObject(indexPath) {
                 arraySelectedTags.append(indexPath)
                 barButtonDelete.enabled = true
             }
-            
         }
     }
     
     func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
-        let index = (arraySelectedTags as NSArray).indexOfObject(indexPath)
-        arraySelectedTags.removeAtIndex(index)
-        if arraySelectedTags.count == 0 {
-            barButtonDelete.enabled = false
+        if tableViewMain.editing && (arraySelectedTags as NSArray).containsObject(indexPath) {
+            let index = (arraySelectedTags as NSArray).indexOfObject(indexPath)
+            arraySelectedTags.removeAtIndex(index)
+            if arraySelectedTags.count == 0 {
+                barButtonDelete.enabled = false
+            }
         }
+        
     }
     
     func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -191,5 +203,13 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         }
         header.addSubview(label)
         return header
+    }
+    
+    func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        if indexPath.section == 0 {
+            return false
+        }
+        
+        return true
     }
 }
