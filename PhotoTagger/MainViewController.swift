@@ -9,46 +9,35 @@
 import UIKit
 import CoreData
 
-class MainViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate {
+class MainViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     /*** IBOutlets ***/
     @IBOutlet weak var tableViewMain: UITableView!
     /*** CoreData ***/
-    var tags = [Tag]()
     var selectedTag: Tag?
-    var pictures = [Picture]()
+    var tagsFetchController: NSFetchedResultsController! = nil
     
     // ================================================================================
     // MARK: - Lifecycle
     // ================================================================================
     override func viewDidLoad() {
         super.viewDidLoad()
+        let managedContext = appDelegate.managedObjectContext!
+        let fetchRequestTags = NSFetchRequest(entityName: "Tag")
+        fetchRequestTags.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        tagsFetchController = NSFetchedResultsController(fetchRequest: fetchRequestTags, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "Master")
+        tagsFetchController.delegate = self
+        var error: NSError?
+        tagsFetchController.performFetch(&error)
+        if let theError = error {
+            println("Could not fetch \(error), \(error!.userInfo)")
+        }
+        else {
+            tableViewMain.reloadData()
+        }
     }
 
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        
-        let managedContext = appDelegate.managedObjectContext!
-        let fetchRequest = NSFetchRequest(entityName: "Tag")
-        
-        var error: NSError?
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Tag]
-        if fetchedResults != nil {
-            tags = fetchedResults!
-        }
-        else {
-            println("Could not fetch \(error), \(error!.userInfo)")
-        }
-        tableViewMain.reloadData()
-        
-        let fetchRequest2 = NSFetchRequest(entityName: "Picture")
-        var error2: NSError?
-        let fetchedResults2 = managedContext.executeFetchRequest(fetchRequest2, error: &error2) as? [Picture]
-        if fetchedResults2 != nil {
-            pictures = fetchedResults2!
-        }
-        else {
-            println("Could not fetch \(error), \(error!.userInfo)")
-        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -60,10 +49,6 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         if segue.identifier == "showTag" {
             let tagViewController = segue.destinationViewController as! TagViewController
             tagViewController.tag = selectedTag
-        }
-        else {
-            let tagViewController = segue.destinationViewController as! TagViewController
-            tagViewController.tag = nil
         }
     }
     
@@ -94,64 +79,13 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
     // ================================================================================
     // MARK: - Private
     // ================================================================================
-    func addTagWithName(name: String) {
-        // 1 - get managed context
-        let managedContext = appDelegate.managedObjectContext!
-        
-        // 2 - Check if we already have it
-        let fetchRequest = NSFetchRequest(entityName: "Tag")
-        fetchRequest.predicate = NSPredicate(format: "name = '\(name)'")
-        
-        var error: NSError? = nil
-        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Tag]
-        if let theError = error  {
-            println("Could not fetch \(error), \(error)")
-        }
-        else if fetchedResults?.count == 0 {
-             //3 - Insert new
-            let entity = NSEntityDescription.entityForName("Tag", inManagedObjectContext: managedContext)
-            let newTag: Tag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
-            //let newTag = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedContext)
-            
-            // 4 - Set value for tag.name and save
-            newTag.name = name
-            
-            var error: NSError?
-            if !managedContext.save(&error) {
-                println("Could not save tag: \(error), \(error?.userInfo)")
-            }
-            
-            tags.append(newTag)
-        }
-    }
-   
-    func addPictureWithIdentifier(identifier: String) {
-        // 1 - get managed context
-        let managedContext = appDelegate.managedObjectContext!
-        
-        // 2 - Check if we already have it
-        let fetchRequest = NSFetchRequest(entityName: "Picture")
-        fetchRequest.predicate = NSPredicate(format: "identifier = '\(identifier)'")
-        
-        var error: NSError? = nil
-        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Picture]
-        if let theError = error  {
-            println("Could not fetch \(error), \(error)")
-        }
-        else if fetchedResults?.count == 0 {
-            //3 - Insert new
-            let newPicture: Picture = NSEntityDescription.insertNewObjectForEntityForName("Picture", inManagedObjectContext: managedContext) as! Picture
-            
-            // 4 - Set value for tag.name and save
-            newPicture.identifier = identifier
-            
-            var error: NSError?
-            if !managedContext.save(&error) {
-                println("Could not save tag: \(error), \(error?.userInfo)")
-            }
-            
-            pictures.append(newPicture)
-        }
+    
+    
+    // ================================================================================
+    // MARK: - NSFetchedResultsControllerDelegate
+    // ================================================================================
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        tableViewMain.reloadData()
     }
     
     // ================================================================================
@@ -166,26 +100,33 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
             return 1
         }
         else {
-            return tags.count
+            return tagsFetchController.fetchedObjects!.count
         }
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell: UITableViewCell
         if indexPath.section == 0 {
-            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellMainTable", forIndexPath: indexPath)as! UITableViewCell
+            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellAllImages", forIndexPath: indexPath)as! UITableViewCell
         }
         else {
-            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellSecondaryTable", forIndexPath: indexPath) as! UITableViewCell
+            cell = tableViewMain.dequeueReusableCellWithIdentifier("CellTag", forIndexPath: indexPath) as! UITableViewCell
         }
 
+        let lblTitle = cell.viewWithTag(1) as! UILabel
+        
         if indexPath.section == 0 {
-            cell.textLabel?.text = "All photos"
+            lblTitle.text = "All photos"
             
         }
         else {
-            let tag = tags[indexPath.row]
-            cell.textLabel?.text = tag.name
+            let tag = tagsFetchController.fetchedObjects![indexPath.row] as! Tag
+            lblTitle.text = tag.name
+            let lblCount = cell.viewWithTag(2) as! UILabel
+            lblCount.text = ""
+            if tag.pics.count > 0 {
+                lblCount.text = "\(tag.pics.count)"
+            }
         }
         return cell
     }
@@ -195,9 +136,9 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
             selectedTag = nil
         }
         else {
-            selectedTag = tags[indexPath.row]
-            performSegueWithIdentifier("showTag", sender: self)
+            selectedTag = tagsFetchController.fetchedObjects![indexPath.row] as? Tag
         }
+        performSegueWithIdentifier("showTag", sender: self)
     }
     
     func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

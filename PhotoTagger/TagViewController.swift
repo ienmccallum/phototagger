@@ -81,7 +81,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 navigationItem.rightBarButtonItem = btnTag
                 mode = .LIBRARY
                 navigationItem.title = "All photos"
-                navigationController?.navigationBar.topItem?.title = "Main"
+                navigationController?.navigationBar.topItem?.title = "Tags"
                 
             }
             
@@ -89,6 +89,10 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             
             generateDataStructures()
         }
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {

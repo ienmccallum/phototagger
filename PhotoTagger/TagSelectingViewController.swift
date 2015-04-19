@@ -14,37 +14,48 @@ protocol TagSelectingViewControllerDelegate {
     func didSaveWithTags(Array<Tag>!)
 }
 
-class TagSelectingViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate {
+class TagSelectingViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     var selectedTags: Array<Tag>! = Array<Tag>()
     var delegate: TagSelectingViewControllerDelegate?
-    var tags: Array<Tag>! = Array<Tag>()
     var pictures: Array<Picture>! = Array<Picture>()
+    var tagsFetchController: NSFetchedResultsController! = nil
     
     @IBOutlet weak var tableViewTags: UITableView!
     @IBOutlet weak var btnSave: UIBarButtonItem!
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         let managedContext = appDelegate.managedObjectContext!
-        let fetchRequest = NSFetchRequest(entityName: "Tag")
-        
+        let fetchRequestTags = NSFetchRequest(entityName: "Tag")
+        fetchRequestTags.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        tagsFetchController = NSFetchedResultsController(fetchRequest: fetchRequestTags, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "Master")
+        tagsFetchController.delegate = self
         var error: NSError?
-        
-        let fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Tag]
-        if fetchedResults != nil {
-            tags = fetchedResults!
-            tableViewTags.reloadData()
+        tagsFetchController.performFetch(&error)
+        if let theError = error {
+            println("Could not fetch \(error), \(error!.userInfo)")
         }
         else {
-            println("Could not fetch \(error), \(error!.userInfo)")
+            tableViewTags.reloadData()
         }
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
+    }
+    
+    // ================================================================================
+    // MARK: - Private
+    // ================================================================================
+   
+    
+    // ================================================================================
+    // MARK: - NSFetchedResultsControllerDelegate
+    // ================================================================================
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        tableViewTags.reloadData()
     }
     
     // ================================================================================
@@ -62,8 +73,24 @@ class TagSelectingViewController: DefaultViewController, UITableViewDataSource, 
         })
     }
     
-    
     @IBAction func btnAddTag_TouchUpInside(sender: UIBarButtonItem) {
+        var alert = UIAlertController(title: "New Tag", message: "Add new tag", preferredStyle: .Alert)
+        alert.addTextFieldWithConfigurationHandler { (textField: UITextField!) -> Void in }
+        
+        let saveAction = UIAlertAction(title: "Save", style: .Default) { (action: UIAlertAction!) -> Void in
+            let textField = alert.textFields![0] as! UITextField
+            if textField.text != "" {
+                self.addTagWithName(textField.text)
+            }
+        }
+        alert.addAction(saveAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Default) { (action: UIAlertAction!) -> Void in
+            
+        }
+        alert.addAction(cancelAction)
+        
+        presentViewController(alert, animated: true, completion: nil)
     }
     
     // ================================================================================
@@ -74,19 +101,19 @@ class TagSelectingViewController: DefaultViewController, UITableViewDataSource, 
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tags.count
+        return tagsFetchController.fetchedObjects!.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell: UITableViewCell = tableView.dequeueReusableCellWithIdentifier("CellTag", forIndexPath: indexPath) as! UITableViewCell
-        cell.textLabel?.text = tags[indexPath.row].name
+        cell.textLabel?.text = (tagsFetchController.fetchedObjects![indexPath.row] as! Tag).name
         return cell
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         var cell = tableView.cellForRowAtIndexPath(indexPath)
         cell!.accessoryType = UITableViewCellAccessoryType.Checkmark
-        let theTag = (self.tags as NSArray).objectAtIndex(indexPath.row) as! Tag
+        let theTag = tagsFetchController.fetchedObjects![indexPath.row] as! Tag
         self.selectedTags.append(theTag)
         self.btnSave?.enabled = true
     }
@@ -94,7 +121,7 @@ class TagSelectingViewController: DefaultViewController, UITableViewDataSource, 
     func tableView(tableView: UITableView, didDeselectRowAtIndexPath indexPath: NSIndexPath) {
         var cell = tableView.cellForRowAtIndexPath(indexPath)
         cell?.accessoryType = UITableViewCellAccessoryType.None
-        let theTag = (self.tags as NSArray).objectAtIndex(indexPath.row) as! Tag
+        let theTag = tagsFetchController.fetchedObjects![indexPath.row] as! Tag
         let index = (self.selectedTags as NSArray).indexOfObject(theTag)
         self.selectedTags.removeAtIndex(index)
         if(self.selectedTags.count == 0) {
