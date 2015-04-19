@@ -39,6 +39,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         }
         
         barButtonDelete = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Trash, target: self, action: Selector("deletePressed"))
+        barButtonDelete.tintColor = UIColor.redColor()
         barButtonAdd = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Add, target: self, action: Selector("addPressed"))
         self.navigationItem.rightBarButtonItem = self.barButtonAdd
     }
