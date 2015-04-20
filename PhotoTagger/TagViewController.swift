@@ -176,7 +176,8 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
             }
         }
         
-        addTagWithName(tag!.name, pics: picsArray)
+        updateInsertTagWithName(tag!.name, pics: picsArray)
+        save()
     }
     
     @IBAction func btnHideShowTagged_TouchUpInside(sender: UIBarButtonItem) {
@@ -246,8 +247,9 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         }
         else {
             for pic: PHAsset in selectedPhotos {
-                addPictureWithIdentifier(pic.localIdentifier, tags: tags)
+                updateInsertPictureWithIdentifier(pic.localIdentifier, tags: tags)
             }
+            save()
             
             generateDataStructures()
             collectionViewPhotos.reloadData()
@@ -332,7 +334,8 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 lastSelected = foundPic
             }
             else {
-                self.addPictureWithIdentifier(selectedAsset.localIdentifier, tags: Array<Tag>())
+                updateInsertPictureWithIdentifier(selectedAsset.localIdentifier, tags: Array<Tag>())
+                save()
                 lastSelected = (picsFetchController.fetchedObjects! as! [Picture]).last
             }
             performSegueWithIdentifier("showPicture", sender: self)

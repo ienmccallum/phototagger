@@ -84,7 +84,8 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         let saveAction = UIAlertAction(title: "Save", style: .Default) { (action: UIAlertAction!) -> Void in
             let textField = alert.textFields![0] as! UITextField
             if textField.text != "" {
-                self.addTagWithName(textField.text)
+                self.updateInsertTagWithName(textField.text)
+                self.save()
                 self.tableViewMain.reloadData()
             }
         }
