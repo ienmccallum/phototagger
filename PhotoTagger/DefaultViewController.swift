@@ -20,27 +20,6 @@ class DefaultViewController: UIViewController {
     
     func updateInsertTagWithName(name: String) {
         updateInsertTagWithName(name, pics: Array<Picture>())
-//        // 1 - get managed context
-//        let managedContext = appDelegate.managedObjectContext!
-//        
-//        // 2 - Check if we already have it
-//        let fetchRequest = NSFetchRequest(entityName: "Tag")
-//        fetchRequest.predicate = NSPredicate(format: "name = '\(name)'")
-//        
-//        var error: NSError? = nil
-//        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Tag]
-//        if let theError = error  {
-//            println("Could not fetch \(error), \(error)")
-//        }
-//        else if fetchedResults?.count == 0 {
-//            //3 - Insert new
-//            let entity = NSEntityDescription.entityForName("Tag", inManagedObjectContext: managedContext)
-//            let newTag: Tag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
-//            //let newTag = NSManagedObject(entity: entity!, insertIntoManagedObjectContext: managedContext)
-//            
-//            // 4 - Set value for tag.name and save
-//            newTag.name = name
-//        }
     }
     
     func updateInsertTagWithName(name: String, pics: Array<Picture>) {
@@ -72,25 +51,6 @@ class DefaultViewController: UIViewController {
     
     func updateInsertPictureWithIdentifier(identifier: String) {
         updateInsertPictureWithIdentifier(identifier, tags: Array<Tag>())
-//        // 1 - get managed context
-//        let managedContext = appDelegate.managedObjectContext!
-//
-//        // 2 - Check if we already have it
-//        let fetchRequest = NSFetchRequest(entityName: "Picture")
-//        fetchRequest.predicate = NSPredicate(format: "identifier = '\(identifier)'")
-//
-//        var error: NSError? = nil
-//        var fetchedResults = managedContext.executeFetchRequest(fetchRequest, error: &error) as? [Picture]
-//        if let theError = error  {
-//            println("Could not fetch \(error), \(error)")
-//        }
-//        else if fetchedResults?.count == 0 {
-//            //3 - Insert new
-//            let newPicture: Picture = NSEntityDescription.insertNewObjectForEntityForName("Picture", inManagedObjectContext: managedContext) as! Picture
-//
-//            // 4 - Set value for tag.name and save
-//            newPicture.identifier = identifier
-//        }
     }
     
     func updateInsertPictureWithIdentifier(identifier: String, tags: [Tag]) {

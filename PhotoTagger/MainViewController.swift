@@ -27,7 +27,7 @@ class MainViewController: DefaultViewController, UITableViewDataSource, UITableV
         let managedContext = appDelegate.managedObjectContext!
         let fetchRequestTags = NSFetchRequest(entityName: "Tag")
         fetchRequestTags.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-        tagsFetchController = NSFetchedResultsController(fetchRequest: fetchRequestTags, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "Master")
+        tagsFetchController = NSFetchedResultsController(fetchRequest: fetchRequestTags, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "MainViewControllerTags")
         tagsFetchController.delegate = self
         var error: NSError?
         tagsFetchController.performFetch(&error)

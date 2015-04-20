@@ -54,7 +54,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         let managedContext = appDelegate.managedObjectContext!
         let picsFetchRequest = NSFetchRequest(entityName: "Picture")
         picsFetchRequest.sortDescriptors = [NSSortDescriptor(key: "identifier", ascending: true)]
-        picsFetchController = NSFetchedResultsController(fetchRequest: picsFetchRequest, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "Master")
+        picsFetchController = NSFetchedResultsController(fetchRequest: picsFetchRequest, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "TagsViewControllerPics")
         picsFetchController.delegate = self
         var error: NSError?
         picsFetchController.performFetch(&error)
