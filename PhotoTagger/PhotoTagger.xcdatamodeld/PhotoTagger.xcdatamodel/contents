@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D131" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D136" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Picture" representedClassName="PhotoTagger.Picture" syncable="YES">
+        <attribute name="creationDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="identifier" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="tags" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tag" inverseName="pics" inverseEntity="Tag" syncable="YES"/>
     </entity>
@@ -9,7 +10,7 @@
         <relationship name="pics" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Picture" inverseName="tags" inverseEntity="Picture" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Picture" positionX="223" positionY="-306" width="128" height="75"/>
+        <element name="Picture" positionX="223" positionY="-306" width="128" height="90"/>
         <element name="Tag" positionX="1060" positionY="-444" width="128" height="75"/>
     </elements>
 </model>

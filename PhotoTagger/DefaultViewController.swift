@@ -69,6 +69,7 @@ class DefaultViewController: UIViewController {
             var newPicture: Picture
             if fetchedResults.count == 0 {
                 newPicture = NSEntityDescription.insertNewObjectForEntityForName("Picture", inManagedObjectContext: managedContext) as! Picture
+                newPicture.creationDate = NSDate()
             }
             else {
                 newPicture = (fetchedResults as NSArray).objectAtIndex(0) as! Picture

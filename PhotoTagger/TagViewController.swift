@@ -37,13 +37,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     var selectedPhotos = Array<PHAsset>()
     var collectionViewCellSize: CGFloat = 78.0
     var imageSize: CGSize = CGSize(width: 78.0 * screenScale, height: 78.0 * screenScale)
-    var lastSelected: Picture?
+    var lastSelected: Picture! = nil
     var lastSelectedIndexPath: NSIndexPath?
     var btnTag: UIBarButtonItem?
     var initing = true
     var isFiltering = false
     var picsFetchController: NSFetchedResultsController! = nil
-    
+    var picsDict: Dictionary<String, Picture>! = nil
     
     // ================================================================================
     // MARK: - Lifecycle
@@ -53,7 +53,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         
         let managedContext = appDelegate.managedObjectContext!
         let picsFetchRequest = NSFetchRequest(entityName: "Picture")
-        picsFetchRequest.sortDescriptors = [NSSortDescriptor(key: "identifier", ascending: true)]
+        picsFetchRequest.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         picsFetchController = NSFetchedResultsController(fetchRequest: picsFetchRequest, managedObjectContext: managedContext, sectionNameKeyPath: nil, cacheName: "TagsViewControllerPics")
         picsFetchController.delegate = self
         var error: NSError?
@@ -61,11 +61,12 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         if let theError = error {
             println("Could not fetch \(error), \(error!.userInfo)")
         }
+        buildDictionary()
     }
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        collectionViewCellSize = ((UIScreen.mainScreen().nativeBounds.width / UIScreen.mainScreen().scale) - 6) / 4
+        collectionViewCellSize = ((UIScreen.mainScreen().nativeBounds.width / UIScreen.mainScreen().scale) - 4) / 3
         imageSize = CGSize(width: collectionViewCellSize * screenScale, height: collectionViewCellSize * screenScale)
         
         if initing {
@@ -111,12 +112,18 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // ================================================================================
     // MARK: - Private
     // ================================================================================
-
+    func buildDictionary() {
+        picsDict = Dictionary<String, Picture>()
+        for pic: Picture in (picsFetchController.fetchedObjects as! [Picture]) {
+            picsDict[pic.identifier] = pic
+        }
+    }
     
     // ================================================================================
     // MARK: - NSFetchedResultsControllerDelegate
     // ================================================================================
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        buildDictionary()
         collectionViewPhotos.reloadData()
     }
     
@@ -323,20 +330,13 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         }
         
         if selectMode == .VIEW {
-            var foundPic: Picture?
-            for pic: Picture in picsFetchController.fetchedObjects! as! [Picture] {
-                if pic.identifier == selectedAsset.localIdentifier {
-                    foundPic = pic
-                    break
-                }
-            }
-            if let thePic = foundPic {
-                lastSelected = foundPic
+            if ((picsDict as NSDictionary).allKeys as NSArray).containsObject(selectedAsset.localIdentifier) {
+                lastSelected = picsDict[selectedAsset.localIdentifier]
             }
             else {
                 updateInsertPictureWithIdentifier(selectedAsset.localIdentifier, tags: Array<Tag>())
                 save()
-                lastSelected = (picsFetchController.fetchedObjects! as! [Picture]).last
+                lastSelected = (picsFetchController.fetchedObjects as! [Picture]).last
             }
             performSegueWithIdentifier("showPicture", sender: self)
         }
@@ -361,7 +361,6 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 else {
                     btnCount.title = "\(selectedPhotos.count) - (\(arrayPhotos.count))"
                 }
-                
             }
             else {
                 btnTag?.enabled = false
@@ -371,9 +370,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
                 else {
                     btnCount.title = "\(arrayPhotos.count)"
                 }
-                
             }
-            
         }
     }
     
