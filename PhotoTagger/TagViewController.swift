@@ -42,6 +42,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     var btnTag: UIBarButtonItem?
     var initing = true
     var isFiltering = false
+    var isTagging = false
     var picsFetchController: NSFetchedResultsController! = nil
     var picsDict: Dictionary<String, Picture>! = nil
     
@@ -50,7 +51,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // ================================================================================
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        //UIPasteboard.generalPasteboard().string = ""
         let managedContext = appDelegate.managedObjectContext!
         let picsFetchRequest = NSFetchRequest(entityName: "Picture")
         picsFetchRequest.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
@@ -100,6 +101,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showTagSelector" {
             let view: TagSelectingViewController = segue.destinationViewController as! TagSelectingViewController
+            view.isTagging = self.isTagging
             view.delegate = self
         }
         else if segue.identifier == "showPicture" {
@@ -167,6 +169,7 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
     // MARK: - IBAction
     // ================================================================================
     func btnTagPhoto_TouchUpInside(sender: UIBarButtonItem) {
+        isTagging = true
         performSegueWithIdentifier("showTagSelector", sender: self)
     }
     
@@ -226,48 +229,49 @@ class TagViewController: DefaultViewController, UINavigationControllerDelegate, 
         isFiltering = false
         selectedPhotos = Array<PHAsset>()
         lastSelectedIndexPath = nil
+        isTagging = false
     }
     
     func didSaveWithTags(tags: Array<Tag>!) {
-        if isFiltering {
-            arrayFilteredPhotos = Array<PHAsset>()
-            var notToShow = Array<String>()
-            for tag: Tag in tags {
-                for pic: Picture in (tag.pics.allObjects as! [Picture]) {
-                    notToShow.append(pic.identifier)
-                }
-            }
-            for asset: PHAsset in arrayPhotos {
-                if !(notToShow as NSArray).containsObject(asset.localIdentifier) {
-                    arrayFilteredPhotos.append(asset)
-                }
-            }
-            
-            if arrayFilteredPhotos.count >= 0 && arrayFilteredPhotos.count < arrayPhotos.count{
-                btnCount.title = "\(arrayFilteredPhotos.count)"
-                btnHideShowTagged.title = "Show All"
-                self.collectionViewPhotos.reloadData()
-            }
-            else {
-                isFiltering = false
-            }
+        for pic: PHAsset in selectedPhotos {
+            updateInsertPictureWithIdentifier(pic.localIdentifier, tags: tags)
         }
-        else {
-            for pic: PHAsset in selectedPhotos {
-                updateInsertPictureWithIdentifier(pic.localIdentifier, tags: tags)
-            }
-            save()
-            
-            generateDataStructures()
-            collectionViewPhotos.reloadData()
-            
-            selectedPhotos = Array<PHAsset>()
-            lastSelectedIndexPath = nil
-        }
+        save()
+        
+        generateDataStructures()
+        collectionViewPhotos.reloadData()
+        
+        selectedPhotos = Array<PHAsset>()
+        lastSelectedIndexPath = nil
         
         collectionViewPhotos.reloadData()
+        isTagging = false
     }
     
+    func didFilterWithTags(tags: Array<Tag>!) {
+        isTagging = false
+        arrayFilteredPhotos = Array<PHAsset>()
+        var notToShow = Array<String>()
+        for tag: Tag in tags {
+            for pic: Picture in (tag.pics.allObjects as! [Picture]) {
+                notToShow.append(pic.identifier)
+            }
+        }
+        for asset: PHAsset in arrayPhotos {
+            if !(notToShow as NSArray).containsObject(asset.localIdentifier) {
+                arrayFilteredPhotos.append(asset)
+            }
+        }
+        
+        if arrayFilteredPhotos.count >= 0 && arrayFilteredPhotos.count < arrayPhotos.count{
+            btnCount.title = "\(arrayFilteredPhotos.count)"
+            btnHideShowTagged.title = "Show All"
+            self.collectionViewPhotos.reloadData()
+        }
+        else {
+            isFiltering = false
+        }
+    }
     // ================================================================================
     // MARK: - PictureViewControllerDelegate
     // ================================================================================

@@ -12,13 +12,14 @@ import CoreData
 protocol TagSelectingViewControllerDelegate {
     func didCancel()
     func didSaveWithTags(Array<Tag>!)
+    func didFilterWithTags(Array<Tag>!)
 }
 
 class TagSelectingViewController: DefaultViewController, UITableViewDataSource, UITableViewDelegate, NSFetchedResultsControllerDelegate {
     var selectedTags: Array<Tag>! = Array<Tag>()
     var delegate: TagSelectingViewControllerDelegate?
-    var pictures: Array<Picture>! = Array<Picture>()
     var tagsFetchController: NSFetchedResultsController! = nil
+    var isTagging = false
     
     @IBOutlet weak var tableViewTags: UITableView!
     @IBOutlet weak var btnSave: UIBarButtonItem!
@@ -69,7 +70,12 @@ class TagSelectingViewController: DefaultViewController, UITableViewDataSource, 
     
     @IBAction func btnSave_TouchUpInside(sender: UIBarButtonItem) {
         dismissViewControllerAnimated(true, completion: { () -> Void in
-            self.delegate!.didSaveWithTags(self.selectedTags)
+            if self.isTagging {
+                self.delegate!.didSaveWithTags(self.selectedTags)
+            }
+            else {
+                self.delegate!.didFilterWithTags(self.selectedTags)
+            }
         })
     }
     

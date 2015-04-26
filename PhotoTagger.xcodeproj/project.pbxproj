@@ -18,7 +18,7 @@
 		408C253D1AD9AFAD00DD7C6D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 408C253C1AD9AFAD00DD7C6D /* Main.storyboard */; };
 		40B580261ADC536A00375FC8 /* PictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B580251ADC536A00375FC8 /* PictureViewController.swift */; };
 		40CB05E31AEC4C4B0033F65B /* Picture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40CB05E21AEC4C4B0033F65B /* Picture.swift */; };
-		40CB05E51AEC4C4C0033F65B /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40CB05E41AEC4C4C0033F65B /* Tag.swift */; };
+		40CB05EA1AEC5A680033F65B /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40CB05E91AEC5A680033F65B /* Tag.swift */; };
 		40F88E661AD9B4F2003D152D /* check_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 40F88E641AD9B4F2003D152D /* check_icon.png */; };
 		40F88E671AD9B4F2003D152D /* check_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 40F88E651AD9B4F2003D152D /* check_icon@2x.png */; };
 		40F88E691AD9B577003D152D /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F88E681AD9B577003D152D /* PhotoCell.swift */; };
@@ -51,7 +51,9 @@
 		408C253C1AD9AFAD00DD7C6D /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = ../Main.storyboard; sourceTree = "<group>"; };
 		40B580251ADC536A00375FC8 /* PictureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PictureViewController.swift; sourceTree = "<group>"; };
 		40CB05E21AEC4C4B0033F65B /* Picture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Picture.swift; path = ../Picture.swift; sourceTree = "<group>"; };
-		40CB05E41AEC4C4C0033F65B /* Tag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Tag.swift; path = ../Tag.swift; sourceTree = "<group>"; };
+		40CB05E61AEC59360033F65B /* PhotoTagger _v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "PhotoTagger _v2.xcdatamodel"; sourceTree = "<group>"; };
+		40CB05E91AEC5A680033F65B /* Tag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Tag.swift; path = ../Tag.swift; sourceTree = "<group>"; };
+		40CB05EB1AEC5D300033F65B /* PhotoTagger _v3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "PhotoTagger _v3.xcdatamodel"; sourceTree = "<group>"; };
 		40F88E641AD9B4F2003D152D /* check_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_icon.png; sourceTree = "<group>"; };
 		40F88E651AD9B4F2003D152D /* check_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "check_icon@2x.png"; sourceTree = "<group>"; };
 		40F88E681AD9B577003D152D /* PhotoCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
@@ -88,7 +90,7 @@
 		2232013D1AC984C800181BE1 /* Managed */ = {
 			isa = PBXGroup;
 			children = (
-				40CB05E41AEC4C4C0033F65B /* Tag.swift */,
+				40CB05E91AEC5A680033F65B /* Tag.swift */,
 				40CB05E21AEC4C4B0033F65B /* Picture.swift */,
 			);
 			name = Managed;
@@ -293,9 +295,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40CB05E51AEC4C4C0033F65B /* Tag.swift in Sources */,
 				223201451AC9899A00181BE1 /* DefaultViewController.swift in Sources */,
 				40CB05E31AEC4C4B0033F65B /* Picture.swift in Sources */,
+				40CB05EA1AEC5A680033F65B /* Tag.swift in Sources */,
 				4088FCDC1AC8610D00EDCD89 /* MainViewController.swift in Sources */,
 				40F88E6C1AD9C53E003D152D /* TagSelectingViewController.swift in Sources */,
 				40F88E691AD9B577003D152D /* PhotoCell.swift in Sources */,
@@ -511,9 +513,11 @@
 		4088FCD81AC8610D00EDCD89 /* PhotoTagger.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				40CB05EB1AEC5D300033F65B /* PhotoTagger _v3.xcdatamodel */,
+				40CB05E61AEC59360033F65B /* PhotoTagger _v2.xcdatamodel */,
 				4088FCD91AC8610D00EDCD89 /* PhotoTagger.xcdatamodel */,
 			);
-			currentVersion = 4088FCD91AC8610D00EDCD89 /* PhotoTagger.xcdatamodel */;
+			currentVersion = 40CB05EB1AEC5D300033F65B /* PhotoTagger _v3.xcdatamodel */;
 			path = PhotoTagger.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

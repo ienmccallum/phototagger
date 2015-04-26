@@ -40,6 +40,8 @@ class DefaultViewController: UIViewController {
             if fetchedResults!.count == 0 {
                 newTag = NSEntityDescription.insertNewObjectForEntityForName("Tag", inManagedObjectContext: managedContext) as! Tag
                 newTag.name = name
+                newTag.creationDate = NSDate()
+                
             }
             else {
                 newTag = (fetchedResults! as NSArray).objectAtIndex(0) as! Tag
